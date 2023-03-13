@@ -232,3 +232,11 @@ join departments as d on de.dept_no = d.dept_no
 where e.gender = 'F' -- if you alias in one place you are going to have to alias throughout UNLESS it is totally unique
 ;
 
+-- If they both share the same primary key as in physical name use below (more breakable)
+select e.first_name,
+		e.last_name,
+		d.dept_name
+from employees as e
+join dept_emp as de using(emp_no)
+join departments as d on de.dept_no = d.dept_no
+;
