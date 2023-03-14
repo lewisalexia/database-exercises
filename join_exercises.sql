@@ -27,10 +27,10 @@ join roles on users.role_id = roles.id
 group by role_id
 ;
 
-select roles.name, count(*)
-from roles
-join users on roles.id = users.role_id
-group by roles.name
+select roles.name as role_name, count(users.name) as number_of_employees
+from users
+right join roles on users.role_id = roles.id
+group by role_name
 ;
 
 -- 2. write a query that shows each department along with the name of the current manager for that department.
@@ -42,11 +42,12 @@ from dept_manager;
 select *
 from employees;
 
-select departments.dept_name, employees.first_name, employees.last_name
+select departments.dept_name as 'Department Name', concat(employees.first_name,' ', employees.last_name) as 'Department Manager'
 from departments
 join dept_manager on departments.dept_no = dept_manager.dept_no
 join employees on dept_manager.emp_no = employees.emp_no
 where to_date = '9999-01-01'
+order by departments.dept_name
 ;
 
 -- 3. Find the name of all departments currently managed by women.
@@ -62,15 +63,13 @@ where to_date = '9999-01-01'
 select *
 from departments;
 select *
-from dept_manager;
-select *
 from employees; -- d009
 select *
 from titles; -- emp_no
 select *
 from dept_emp;
 
-select titles.title as 'Title', count(*) as 'Count'
+select titles.title as 'Title', count(dept_emp.emp_no) as 'Count'
 from titles
 join employees on titles.emp_no = employees.emp_no
 join dept_emp on employees.emp_no = dept_emp.emp_no
@@ -94,7 +93,7 @@ from dept_emp;
 select *
 from salaries;
 
-select departments.dept_name, employees.first_name, employees.last_name, salaries.salary
+select departments.dept_name as 'Department Name', concat(employees.first_name,' ', employees.last_name) as 'Name' , salaries.salary as 'Salary'
 from departments
 join dept_manager on departments.dept_no = dept_manager.dept_no
 join employees on dept_manager.emp_no = employees.emp_no
@@ -110,7 +109,7 @@ from departments; -- dept_no, dept_name
 select * 
 from dept_emp; -- dept_no, count(here?), to_date
 
-select departments.dept_no, departments.dept_name, count(*) as num_employees
+select departments.dept_no, departments.dept_name, count(dept_emp.emp_no) as num_employees
 from departments
 join dept_emp on departments.dept_no = dept_emp.dept_no
 where dept_emp.to_date = '9999-01-01'
@@ -129,14 +128,14 @@ from dept_emp; -- emp_no, dept_no, to_date
 select departments.dept_name, round(avg(salaries.salary), 4) as average_salary
 from departments
 join dept_emp on departments.dept_no = dept_emp.dept_no
+	and dept_emp.to_date = '9999-01-01'
 join salaries on dept_emp.emp_no = salaries.emp_no
-where salaries.to_date = '9999-01-01'
+	and salaries.to_date = '9999-01-01'
 group by departments.dept_name
 order by average_salary desc
 limit 1
 ;
-
--- ?? HOW TO SINGLE OUT MAX SALARY IN A MORE EFFICIENT WAY
+-- ?? HOW TO SINGLE OUT AGGREGATE FUNCTIONS IN A MORE EFFICIENT WAY ??
 
 -- 8. Who is the highest paid employee in the Marketing department?
 select *
@@ -151,11 +150,11 @@ from employees; -- emp_no, first_name, last_name
 select employees.first_name, employees.last_name
 from departments
 join dept_emp on departments.dept_no = dept_emp.dept_no
+	and dept_emp.to_date = '9999-01-01'
 join salaries on dept_emp.emp_no = salaries.emp_no
+	and salaries.to_date = '9999-01-01'
 join employees on salaries.emp_no = employees.emp_no
 where departments.dept_name = 'Marketing'
-	and dept_emp.to_date = '9999-01-01'
-    and salaries.to_date = '9999-01-01'
 group by employees.first_name, employees.last_name, salaries.salary
 order by salaries.salary desc
 limit 1
@@ -222,25 +221,4 @@ join
     order by manager_dept) as g
     
     on employee_dept = manager_dept
-;
-
-
--- 12. Bonus Who is the highest paid employee within each department.
-select *
-from departments; -- dept_no, dept_name
-select *
-from salaries; -- emp_no, salary, to_date
-select *
-from dept_emp; -- emp_no, dept_no, to_date
-select *
-from employees; -- emp_no, first_name, last_name
-
--- MAIN TABLE
-select *
-from salaries
-join employees on salaries.emp_no = employees.emp_no
-join dept_emp on employees.emp_no = dept_emp.emp_no
-join departments on dept_emp.dept_no = departments.dept_no
-where salaries.to_date = '9999-01-01'
-	and dept_emp.to_date = '9999-01-01'
 ;
