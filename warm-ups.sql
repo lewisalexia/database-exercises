@@ -240,3 +240,31 @@ from employees as e
 join dept_emp as de using(emp_no)
 join departments as d on de.dept_no = d.dept_no
 ;
+
+-- JOINING, more
+
+use join_example_db;
+select *
+from roles;
+
+select *
+from users
+join roles on users.role_id = roles.id
+;
+
+select *
+from users
+left join roles on users.role_id = roles.id
+;
+
+select roles.name as role_name, count(users.name) as number_of_employees
+from users
+right join roles on users.role_id = roles.id
+group by role_name
+;
+
+use employees;
+
+
+
+
