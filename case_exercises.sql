@@ -98,9 +98,9 @@ group by first_name, last_name
 -- add new column sorting by first letter of last name
 select *,
 	CASE last_name
-		WHEN substr(last_name,1,1) between 'A' and 'H' then 'A-H'
-        WHEN substr(last_name,1,1) between 'I' and 'Q' then 'I-Q'
-        WHEN substr(last_name,1,1) between 'R' and 'Z' then 'R-Z'
+		WHEN substr(last_name,1,1) between 'A' and 'H' then 'A-H' -- left(last_name,1) <= 'H'
+        WHEN substr(last_name,1,1) between 'I' and 'Q' then 'I-Q' -- left(last_name,1) < 'Q' and > 'I'
+        WHEN substr(last_name,1,1) between 'R' and 'Z' then 'R-Z' -- left(last_name,1) < 'Z' and > 'R'
     END alpha_group
 from (select first_name, last_name
 from employees
@@ -132,11 +132,11 @@ from employees) as birth_years
 
 -- perform count for new column items
 select birth_year_decades, count(*)
-from (select *,
-	CASE 
-		WHEN birth_date between '1950-01-01' and '1959-12-31' then '50s-60s'
-        WHEN birth_date between '1960-01-01' and '1969-12-31' then '60s-70s'
-	END birth_year_decades
+from (select
+		CASE 
+			WHEN birth_date between '1950-01-01' and '1959-12-31' then '50s'
+			WHEN birth_date between '1960-01-01' and '1969-12-31' then '60s'
+		END birth_year_decades
 from (select first_name, last_name, birth_date
 from employees) as birth_years) b_year
 group by birth_year_decades
@@ -148,64 +148,24 @@ group by birth_year_decades
 -- find current salaries
 -- create average for each department
 -- display
-select *
-from salaries; -- emp_no, salary, from and to_date
-select *
-from dept_emp; -- emp_no, dept_no, from and to_date
-select *
-from departments; -- dept_no, dept_name
 
--- find current employees and their salaries
-select emp_no, salary, to_Date
-from salaries
-where to_date >= curdate()
-;
-
--- VERIFY correct # of current employees
-select count(*)
-from salaries
-where to_date >= curdate()
-;
-
--- join dept_emp on emp_no *current
-select *
-from (select emp_no, salary
-from salaries
-where to_date >= curdate()
-) as a
-join dept_emp de using (emp_no)
-where de.to_date >= curdate()
-;
-
--- find average for each dept_no
-select round(avg(salary),0), dept_no
-from	(select emp_no, salary, dept_no
-		from (select emp_no, salary, to_Date
-				from salaries s
-				where to_date >= curdate()
-				) as a
-		join dept_emp de using (emp_no)
-		where de.to_date >= curdate()
-		) as b
-group by dept_no
-;
-
--- join departments on dept_no to get department names
-select rd avg_salary, d.dept_name dept_name
-from
-(select round(avg(salary),0) as rd, dept_no
-from	(select emp_no, salary, dept_no
-		from (select emp_no, salary, to_Date
-				from salaries s
-				where to_date >= curdate()
-				) as a
-		join dept_emp de using (emp_no)
-		where de.to_date >= curdate()
-		) as b
-group by dept_no
-) as c
-join departments d using (dept_no)
-group by dept_no
+select
+	case
+		when dept_name in ('research','development') then 'R&D'
+		when dept_name in ('sales','marketing') then 'Sales & Marketing'
+        when dept_name in ('production','quality management') then 'Prod & QM'
+        when dept_name in ('finance','human resources') then 'Finance & HR'
+        else dept_name
+	end as dept_group,
+    round(avg(salary),2)
+    -- dept_emp.*, -- > built in sanity check!!!
+    -- salaries.* -- > built in sanity check!!!
+from departments
+join dept_emp using (dept_no)
+join salaries using (emp_no)
+where salaries.to_date >= curdate()
+	and dept_emp.to_date >= curdate()
+group by dept_group
 ;
 
 
