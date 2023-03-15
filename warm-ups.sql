@@ -265,6 +265,41 @@ group by role_name
 
 use employees;
 
+-- warmup
+-- Using the customer table from sakila database,
+-- find the number of active and inactive users
+
+use sakila;
+show tables from sakila;
+select *
+from customer; -- cust_id, store_id, first and last name, active, create and last_update
+
+select count(*)
+from customer
+where active = 1
+; -- 584
+
+select count(*)
+from customer
+where active = 0
+; -- 15
+
+select distinct email
+from customer
+where active = 1
+;
+
+select count(active)
+from customers;
+
+
+
+
+
+
+
+
+
 
 
 
